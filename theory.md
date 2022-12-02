@@ -46,7 +46,7 @@ Remember -- whenever the paper refers to the "embedding of an entity", it is nec
 
 
 ## Open questions, by importance
-1. What is the local context $c_i$? 
+1. What is the local context $c_i$? * -- perhaps see `mulrel_ranker.MulRelRanker()`. it refers to the G&H local model context token attention
 2. What is the intuition behind the "latent" relations? What is incorporated in *one* relation? A link between two mentions? Something else? How are they implemented in the code?
 3. what is the disadvantage of Kolitsas, the state of the art at the time of writing? 
     - speed?

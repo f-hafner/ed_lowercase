@@ -19,6 +19,40 @@ Stef: see the function `get_data_items()` in the entity_disambiguation script.
 - are the tables ever joined together? 
 
 
+## Local context $c_i$
+`REL.mulrel_ranker.PreRank()` is the method that multiplies word and entity vectors. It is used in `prerank_model` in the EntityDisambiguation class.
+- `EntityDisambiguation.embeddings.keys()`: 
+    ```python
+    ['snd_seen', 'snd_voca', 'snd_embeddings', 
+    'entity_seen', 'entity_voca', 'entity_embeddings', 
+    'word_seen', 'word_voca', 'word_embeddings', 'word_embeddings_bag']
+    ```
+- In `mulrel_ranker.prerank_model.forward()`, the following are used
+    - word_embeddings_bag of type torch.nn.modules.sparse.EmbeddingBag(X, 300, mean)
+    - entity_embeddings of type torch.nn.modules.sparse.Embedding(X, 300)
+        - 300 is the length of a single embedding vector
+        - so X must be the number of embeddings? where are they defined?
+    - `entity_ids.shape()`: torch.Size([X, 30]) -- X = len(content) = number of mentions (?)
+        - 30 is the k=30 entities mentioned in part 2.2 of the paper for which the score is calculated
+
+
+from **prerank_model.forward()**:
+- multiply local context and candidate entity embeddings, and returns a probability distribution across the candidates
+- `sent_vecs` are the "local context". They are extracted from `EntityDisambiguation.embeddings["word_embeddings_bag"]`, using the `token_ids`.
+    - for one mention, this is a 300-dimensional embedding vector. I suspect this is calculated as the mean across all tokens (see the `mean` function attached to the object).
+    - My understanding is that this embedding bag contains the embeddings of all tokens in the document (identified by flair), and the token_ids are used to extract the relevant embedding for each mention (the local context differs across mentions).
+- `entity_vecs` are the embeddings of the candidate entities per mention
+    - for N mentions, there are 30 candidate entities with a 300-dimensional embedding each. Thus, this is an N x 30 x 300 tensor.
+    - they are extracted from `EntityDisambiguation.embeddings["entity_embeddings"]`, using the `entity_ids` 
+    - Again, probably `EntityDisambiguation.embeddings["entity_embeddings"]` stores the embeddings of all candidate entities (30 per mention) for a given document (?)
+- Next questions
+    - where are the entities constructed (in the code)
+    - test hypothesis:
+        - the embeddings `entity_embeddings` and `word_embeddings_bag` are the embeddings of the unique words/tokens and candidate entity embeddings (30 per mention)
+        - see the function `__load_embeddings()`? but not sure this loads anything, rather than just initializing the embedding dictonaries?
+    - understand better again where the local context is coming from 
+
+
 
 ## How does the training work? -- schematic view of the `train()` method
 - set up optimizer (`torch.optim`)
