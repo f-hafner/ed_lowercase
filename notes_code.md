@@ -51,6 +51,44 @@ from **prerank_model.forward()**:
         - the embeddings `entity_embeddings` and `word_embeddings_bag` are the embeddings of the unique words/tokens and candidate entity embeddings (30 per mention)
         - see the function `__load_embeddings()`? but not sure this loads anything, rather than just initializing the embedding dictonaries?
     - understand better again where the local context is coming from 
+    - where is the function `f(c_i, m_i)` in the code?
+
+
+from **`EntityDisambiguation.get_data_items()`** (I am not sure if any of this is correct.)
+- `named_candidates` are the candidate entities
+- `named_cands_filt` are the unique candidates
+- `__embed_words` gets the embeddings from the db. `_embed_words()`  
+    - is called several times
+        - for entity embeddings
+        - for word embeddings
+        - for snd glove embeddings (??)
+    - what does it do?
+        - `embs = self.emb.emb(words_filt, table_name)`
+            - `self.emb()` is a `GenericLookup` with first argument "entity_word_embedding", which means it points to the database "entity_word_embedding.db".
+            - the `emb()` method calls `self.lookup_list(words, table_name)`
+            - it looks up the word and embeddings from the table and stores them in memory.
+        - look up the embedding. if checked, add to `seen`, and then it is not checked anymore for the next mention. does it also store some kind of id? `dir(self.embeddings["word_voca"])` gives a method `get_id`
+        - add_to_vocab: what is the deal with `LOWER`? *--check where the vocabulary is used, and make a run to see what it looks like/what the lower option is doing there*
+            - `vocabulary`:
+                - size -- number of unique embeddings? double check with dimensions of the tensor 
+                - how does `.get_id()` work? 
+        - `self.__batch_embs[name]`: appends the embedding `e` as a tensor to torch.
+        - should this not somehow return an index to look up the embedding vector later on?? 
+        - it seems that `__batch_embs` stores the embeddings by name (word, entity, glove, ...?)
+- `rctx` and `lctx` are the local contexts. They come from `m["context"]`
+    - "context" is defined in the mention detection step, in `format_spans()`. `"context": (left_ctxt, right_ctxt),`, which comes from `MentionDetectionBase.get_ctxt`. But the surrounding context seems to be 100 words, not 50 now.
+    - then we have up to 100 single words to the left and the right  
+- what is `snd_lctx` and `snd_rctx`? context of the sentence?
+- other questions
+    - what does the `mask` do?
+    - what is snd? secondary? what is it for?
+    - what are all the ids? ie, `rctx_ids`, `lctx_ids`, `ment_ids`, 
+    - where is the mapping between words and numbers created that serves to look up the embedding vectors in the estimation function (at least for the preranking?)
+    - what is voca? vocabulary? where is this used later? 
+
+
+
+
 
 
 

@@ -20,7 +20,7 @@ After the mention detection step, there are two input data sources.
 - 3 candidates based on the similarity to the context of the mention
     - The key term here is $\mathbf{e}^T \sum_{w \in c}\mathbf{w}$. $c$ is the 50-word context around the mention m. 
     - We compare the contextual embeddings -- all extracted from wikipedia -- of the entity and the context of the mention. This score is higher if the embeddings are more similar (in vector space). In turn, if the embedding vectors are perpendicular, the score is 0.
-    - Intuitively, we want candidate entities that are often used context similar to the context of the words that are close to the mention.
+    - Intuitively, we want candidate entities that are often used context similar to the context of the words surrounding to the mention.
     - While we could in principle extract embeddings also from the input text and use them for $\mathbf{w}$, this does not work in practice. Not only may the embeddings not have the same dimension, but also the models are trained on different underlying data, and so we cannot compare the embeddings $\mathbf{w}$ and $\mathbf{e}$ with each other.
 
 
@@ -40,13 +40,14 @@ Remember -- whenever the paper refers to the "embedding of an entity", it is nec
     - The global context compares two mentions $i$ and $j$ and their assigned entities. It uses two inputs
         - The similarity of the embeddings $\mathbf{e_i}$ and $\mathbf{e_j}$, and a weighting matrix $\mathbf{R_k}$ that gives weights to the embedding dimensions. Global coherence is higher if the entities from two mentions have more similar embeddings.
         - There are a given number of latent relations, and some may be more important than others. This is captured by a weight, formed by a fraction.
-            - Numerator: the weight is higher if the related mentions $i$ and $j$ and their surrounding words have similar embeddings (single-layer neural network, $f(c_i, m_i)$).  <mark>*how is $c_i$ used here? is it the words, or the corresponding embeddings in wikipedia?*</mark> 
+            - Numerator: the weight is higher if the related mentions $i$ and $j$ and their surrounding words have similar embeddings (single-layer neural network, $f(c_i, m_i)$).  <mark>*how is $c_i$ used here? is it the words, or the corresponding embeddings in wikipedia?*</mark> -- are these also called embeddings, or what are the outputs from the model?
             Again, there is a diagonal weighting matrix $D_k$ giving importance to different dimensions of the output of $f$. 
             - Denumerator: normalization, here ment-norm. Mention $i$ can be related to all other mentions $j$, and we normalize within mention $i$, across mentions $j$.
 
 
 ## Open questions, by importance
 1. What is the local context $c_i$? * -- perhaps see `mulrel_ranker.MulRelRanker()`. it refers to the G&H local model context token attention
+    - see `__embed_words` which extracts the embeddings from the database
 2. What is the intuition behind the "latent" relations? What is incorporated in *one* relation? A link between two mentions? Something else? How are they implemented in the code?
 3. what is the disadvantage of Kolitsas, the state of the art at the time of writing? 
     - speed?
